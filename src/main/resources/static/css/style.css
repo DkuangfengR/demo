@@ -1,0 +1,56 @@
+body
+{
+    padding: 0;
+    margin: 0;
+}
+table
+{
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 1pt;
+}
+
+table, th, tr, td
+{
+    border: .1rem solid #e8e8e8;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.last-td td
+{
+    border-bottom: 0.1rem solid #cbcbcb;
+}
+.head-class
+{
+    font-weight: bold;
+    text-align: left;
+    border-top: 0;
+}
+input
+{
+    border: 0;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    outline: none;
+    text-align: center;
+    padding: 0;
+}
+.button-div
+{
+    background-color: #f1f6fc;
+    display: flex;
+    height: 5rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+button
+{
+    height: 2rem;
+    width: 6rem;
+    border-radius: 1.5rem;
+    color: white;
+    border: none;
+}

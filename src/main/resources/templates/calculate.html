@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+        <title>Title</title>
+        <link rel="stylesheet" type="text/css" href="../css/style.css">
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+        <script src="https://cdn.bootcdn.net/ajax/libs/big.js/6.2.0/big.js"></script>
+    </head>
+    <body>
+        <div id="app">
+            <div style="padding: .1rem;">
+                <table >
+                    <tr>
+                        <th v-for="item in tableHeader">{{item}}</th>
+                    </tr>
+                    <tr v-for="(item,index) in column_1_1" v-bind:class="addTrBorder(index, column_1_1)">
+                        <td>{{item}}</td>
+                        <td v-for="(item2,index2) in tableHeader" v-show="index2 != 0">
+                            <input maxlength="8" type="text" v-model="dat['part_'+index+'_val_'+(index2+1)]" @input="calcVal($event.target.value)"/>
+                        </td>
+                    </tr>
+                    <tr v-for="(item,index) in column_1_2" v-bind:class="addTrBorder(index, column_1_2)">
+                        <td>{{item}}</td>
+                        <td v-for="(item2,index2) in tableHeader" v-show="index2 != 0">
+                            
+                        </td>
+                    </tr>
+                    <tr v-for="(item,index) in column_1_3" v-bind:class="addTrBorder(index, column_1_3)">
+                        <td>{{item}}</td>
+                        <td v-for="(item2,index2) in tableHeader" v-show="index2 != 0">
+                            <input maxlength="8" type="text" v-model="price['val_'+(index2+1)]" @input="calcVal($event.target.value)"/>
+                        </td>
+                    </tr>
+                </table>
+                <div class="button-div">
+                    <button style="background-color: #3675f8;">配煤</button>
+                    <button v-on:click="clear()" style="background-color: #fe4b51">全部清空</button>
+                </div>
+                <table>
+                    <th class="head-class" colspan="4">
+                        <div>配煤分析</div>
+                    </th>
+                    <tbody>
+                        <tr v-for="(item, index) in ansKeys">
+                            <td>{{item.name1}}</td>
+                            <td style="color:#406ba6">{{analysis[item.val1]}}</td>
+                            <td>{{item.name2}}</td>
+                            <td style="color:#406ba6">{{analysis[item.val2]}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+    <script>
+        const va = new Vue({
+            el:'#app',
+            data: {
+                tableHeader: ["原煤", "原煤1", "原煤2", "原煤3", "原煤4", "原煤5", "原煤6", "原煤7", "原煤8"],
+                column_1_1: ["原煤配比", "-1.4回收", "内灰", "硫分", "挥发分", "G值", "Y值"],
+                column_1_2: ["中煤占比", "中煤灰分", "中煤硫分", "中煤挥发", "中煤G值"],
+                column_1_3: ["原煤价格"],
+                dat: {},
+                price: {},
+                ansKeys: [{name1: "成本", val1: "cb", name2: "精煤回收率", val2: "jmhsl"},
+                        {name1: "内灰", val1: "nh", name2: "回收单价", val2: "hsdj"},
+                        {name1: "硫分", val1: "lf", name2: "中煤灰分", val2: "zmhf"},
+                        {name1: "挥发分", val1: "hff", name2: "中煤硫分", val2: "zmlf"},
+                        {name1: "G值", val1: "gVal", name2: "中煤挥发", val2: "zmhf"}],
+
+                analysis: {cb: 0, nh: 0, lf: 0, hff: 0, gVal: 0, yVal: 0, jmhsl: 0, hsdj: 0, zmhf: 0, zmlf: 0, zmhf: 0, zmgVal: 0},
+                currency:"￥"
+            },
+            methods:{
+                addTrBorder(index, name) {
+                    return index == name.length - 1 ? 'last-td' : '';
+                },
+                clear() {
+                    this.dat = {};
+                    this.price = {};
+                    this.analysis = {cb: 0, nh: 0, lf: 0, hff: 0, gVal: 0, yVal: 0, jmhsl: 0, hsdj: 0, zmhf: 0, zmlf: 0, zmhf: 0, zmgVal: 0};
+                },
+                calcVal(val){
+                    var total = new Big(0);
+                    var cbItemsTotal = new Big(0);
+                    var jmhslTmp = new Big(0);
+                    var nhItemsTotal = new Big(0);
+                    var lfItemsTotal = new Big(0);
+                    var hffItemsTotal = new Big(0);
+                    var gValItemsTotal = new Big(0);
+                    for (key in this.dat) {
+                        if (key.indexOf("part_0_val_") != -1) {
+                            if (!this.dat[key]) {
+                                return;
+                            }
+                            total = new Big(this.dat[key]).plus(total);
+                            
+                            var k = key.replace("part_0", "part_1");
+                            if (this.dat[k]) {
+                                var jmhslItem = new Big(this.dat[key]).times(new Big(this.dat[k]));
+                                jmhslTmp = jmhslTmp.plus(jmhslItem);
+                                var cbItemsKey = key.replace("part_0_", "");
+                                if (this.price[cbItemsKey]) {
+                                    cbItemsTotal = cbItemsTotal.plus(new Big(this.dat[key]).times(new Big(this.price[cbItemsKey])));
+                                }
+                                var nhItemKey = key.replace("part_0", "part_2");
+                                if (this.dat[nhItemKey]) {
+                                    nhItemsTotal = nhItemsTotal.plus(jmhslItem.times(this.dat[nhItemKey]));
+                                }
+                                var lfItemsKey = key.replace("part_0", "part_3");
+                                if (this.dat[lfItemsKey]) {
+                                    lfItemsTotal = lfItemsTotal.plus(jmhslItem.times(this.dat[lfItemsKey]));
+                                }
+                                var hffItemsKey = key.replace("part_0", "part_4");
+                                if (this.dat[hffItemsKey]) {
+                                    hffItemsTotal = hffItemsTotal.plus(jmhslItem.times(this.dat[hffItemsKey]));
+                                }
+                                var gValItemsKey = key.replace("part_0", "part_5");
+                                if (this.dat[gValItemsKey]) {
+                                    gValItemsTotal = gValItemsTotal.plus(jmhslItem.times(this.dat[gValItemsKey]));
+                                }
+                            }
+                        }
+                    }
+
+                    this.analysis.cb = cbItemsTotal.div(total).toPrecision(4);
+                    this.analysis.jmhsl = jmhslTmp.div(total).toPrecision(4);
+                    this.analysis.nh = nhItemsTotal.div(jmhslTmp).toPrecision(4);
+                    this.analysis.lf = lfItemsTotal.div(jmhslTmp).toPrecision(4);
+                    this.analysis.hff = hffItemsTotal.div(jmhslTmp).toPrecision(4);
+                    this.analysis.gVal = gValItemsTotal.div(jmhslTmp).toPrecision(4);
+                    this.analysis.hsdj = new Big(this.analysis.cb).div(new Big(this.analysis.jmhsl)).toPrecision(4);
+                }
+            }
+        });
+    </script>
+</html>
+
